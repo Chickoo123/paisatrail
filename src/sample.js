@@ -1,59 +1,65 @@
-// Deterministic synthetic statement (HDFC-style columns) for the demo and tests.
-// All names, references and amounts are fictional.
+// Deterministic synthetic savings-account statement (HDFC-style columns) used by the
+// demo and the tests. All names, references and amounts are fictional. The charges
+// are modelled on narrations commonly seen in Indian bank statements.
 
-function rng(seed) {
-  let s = seed >>> 0;
-  return () => ((s = (s * 1664525 + 1013904223) >>> 0) / 4294967296);
-}
-
-export function sampleStatement(months = 6, start = "2026-05-01") {
-  const r = rng(42);
+export function sampleStatement() {
   const rows = [];
-  const base = Date.parse(start);
-  const day = n => new Date(base + n * 86400000);
-  const fmt = d => `${String(d.getUTCDate()).padStart(2, "0")}/${String(d.getUTCMonth() + 1).padStart(2, "0")}/${String(d.getUTCFullYear()).slice(2)}`;
-  const ref = () => String(Math.floor(r() * 9e11) + 1e11);
-  const push = (d, narr, debit, credit) => rows.push([fmt(d), narr, ref(), fmt(d), debit ? debit.toFixed(2) : "", credit ? credit.toFixed(2) : ""]);
-  const s0 = new Date(base);
-  const md = (m, k) => new Date(Date.UTC(s0.getUTCFullYear(), s0.getUTCMonth() + m, 1 + k));
-  const total = Math.round((md(months, 0) - base) / 86400000);
-  const mon = d => d.toLocaleString("en", { month: "short", timeZone: "UTC" }).toUpperCase();
+  let bal = 18450.25;
+  let ref = 400100200300;
+  const fmt = iso => { const [y, m, d] = iso.split("-"); return `${d}/${m}/${y.slice(2)}`; };
+  const add = (date, narration, amount) => {
+    bal = Math.round((bal + amount) * 100) / 100;
+    rows.push([fmt(date), narration, String(ref++), fmt(date), amount < 0 ? (-amount).toFixed(2) : "", amount > 0 ? amount.toFixed(2) : "", bal.toFixed(2)]);
+  };
+  const charge = (date, narration, base) => { add(date, narration, -base); add(date, `IGST @18% ON ${narration.split(" ")[0]} CHGS`, -Math.round(base * 18) / 100); };
 
-  for (let m = 0; m < months; m++) {
-    push(md(m, 0), `NEFT CR-HDFC0000001-ACME SOFTWARE PVT LTD-SALARY ${mon(md(m, 0))}`, 0, 118500);
-    push(md(m, 2), `UPI/${ref()}/NOBROKER RENT/rent@ybl/Rent`, 26000);
-    push(md(m, 4), `ACH D- BAJAJ FINANCE LTD EMI-${ref()}`, 7850);
-    push(md(m, 5), `UPI/${ref()}/ZERODHA COIN SIP/zerodha@hdfcbank/SIP`, 15000);
-    push(md(m, 7), `POS 4111XXXXXX1111 NETFLIX.COM`, 649);
-    push(md(m, 9), `UPI/${ref()}/SPOTIFY INDIA/spotify@icici/Sub`, 119);
-    push(md(m, 11), `UPI/${ref()}/AIRTEL POSTPAID/airtel@ybl/Bill`, m >= 4 ? 699 : 599);
-    push(md(m, 13), `BBPS/${ref()}/BESCOM ELECTRICITY`, Math.round(1400 + r() * 900));
-    push(md(m, 15), `UPI/${ref()}/CULT FIT/cultfit@axl/Membership`, 1499);
-    if (m % 3 === 1) push(md(m, 20), `POS 4111XXXXXX1111 GOOGLE ONE`, 650);
-    push(md(m, 18), `UPI/${ref()}/LINKEDIN PREMIUM/linkedin@hdfc/Sub`, 1567);
-  }
-  const everyday = [
-    ["SWIGGY", "swiggy@icici", 180, 650, 14], ["ZOMATO", "zomato@hdfcbank", 200, 750, 9],
-    ["BLINKIT", "blinkit@ybl", 250, 1400, 10], ["BIGBASKET", "bigbasket@okhdfc", 900, 2600, 3],
-    ["UBER INDIA", "uber@axis", 120, 520, 10], ["RAPIDO", "rapido@ybl", 45, 160, 6],
-    ["AMAZON PAY", "amazon@apl", 300, 3200, 4], ["MYNTRA", "myntra@ybl", 700, 2800, 1],
-    ["APOLLO PHARMACY", "apollo@icici", 150, 900, 1], ["HPCL PETROL PUMP", "hpcl@sbi", 500, 1500, 3],
-    ["BOOKMYSHOW", "bms@icici", 300, 900, 1], ["RAMESH KUMAR", "9876543210@paytm", 100, 1500, 4],
-  ];
-  for (const [name, handle, lo, hi, perMonth] of everyday) {
-    const n = Math.round(perMonth * months * (0.8 + r() * 0.4));
-    for (let i = 0; i < n; i++) push(day(Math.floor(r() * total)), `UPI/${ref()}/${name}/${handle}/Payment`, Math.round(lo + r() * (hi - lo)));
-  }
-  // Teaching moments: a double charge, a one-off spike, a refund and interest.
-  push(day(47), `UPI/${ref()}/SWIGGY/swiggy@icici/Payment`, 487);
-  push(day(47), `UPI/${ref()}/SWIGGY/swiggy@icici/Payment`, 487);
-  push(day(101), `UPI/${ref()}/AMAZON PAY/amazon@apl/Payment`, 18999);
-  push(day(110), `UPI/${ref()}/AMAZON REFUND/amazon@apl/Refund`, 0, 1299);
-  push(day(150), `ATW-4111XXXXXX1111-ATM CASH WITHDRAWAL`, 5000);
-  push(day(89), `INT.PD:SAVINGS INTEREST CREDIT`, 0, 842);
+  // May 2026: normal month, balance healthy.
+  add("2026-05-01", "NEFT CR-HDFC0000001-ACME SOFTWARE PVT LTD-SALARY MAY", 42000);
+  add("2026-05-03", "UPI/612300001111/NOBROKER RENT/rent@ybl/Rent", -18000);
+  add("2026-05-06", "ATW-4111XXXXXX1111-S1ANAM12-PUNE", -5000);
+  add("2026-05-09", "UPI/612300002222/BIGBASKET/bigbasket@okhdfc/Groceries", -3400);
+  add("2026-05-14", "ATW-4111XXXXXX1111-S1ANAM12-PUNE", -3000);
+  charge("2026-05-31", "ATM CHGS 2 TXNS MAY26", 25); // over the ₹23 cap, and only 2 withdrawals that month
+  add("2026-05-20", "NEFT DR-ICIC0000002-MOTHER-NETBANKING", -6000);
+  charge("2026-05-20", "NEFT CHGS INB 0520", 2.5); // online NEFT from savings: free since 2020
+  add("2026-05-25", "UPI/612300003333/SWIGGY/swiggy@icici/Payment", -640);
 
-  rows.sort((a, b) => { const p = s => s.split("/").reverse().join(""); return p(a[0]).localeCompare(p(b[0])); });
-  const header = ["Date", "Narration", "Chq./Ref.No.", "Value Dt", "Withdrawal Amt.", "Deposit Amt."];
-  const q = v => /[",]/.test(v) ? `"${v}"` : v;
-  return ["SAMPLE BANK - STATEMENT OF ACCOUNT (synthetic demo data)", "Account No: XXXXXXXX1234", "", header.join(","), ...rows.map(x => x.map(q).join(","))].join("\n");
+  // June 2026: spending runs the balance down; quarterly SMS charge; debit card fee.
+  add("2026-06-01", "NEFT CR-HDFC0000001-ACME SOFTWARE PVT LTD-SALARY JUN", 42000);
+  add("2026-06-02", "UPI/612300004444/NOBROKER RENT/rent@ybl/Rent", -18000);
+  add("2026-06-05", "UPI/612300005555/AMAZON PAY/amazon@apl/Payment", -24999);
+  add("2026-06-10", "UPI/612300006666/ZOMATO/zomato@hdfcbank/Food", -820);
+  charge("2026-06-15", "SMS CHGS QTR APR-JUN26", 15);
+  charge("2026-06-15", "SMS CHGS QTR APR-JUN26", 15); // levied twice
+  charge("2026-06-18", "DEBIT CARD ANNUAL FEE 4111XX1111", 500);
+  add("2026-06-20", "PMSBY RENEWAL PREMIUM", -20);
+  add("2026-06-22", "UPI/612300007777/AIRTEL/airtel@ybl/Recharge", -3999);
+  add("2026-06-26", "UPI/612300008888/MYNTRA/myntra@ybl/Shopping", -3500);
+
+  // July 2026: average balance short → minimum-balance penalty, one pushing balance negative.
+  add("2026-07-01", "NEFT CR-HDFC0000001-ACME SOFTWARE PVT LTD-SALARY JUL", 42000);
+  add("2026-07-02", "UPI/612300009999/NOBROKER RENT/rent@ybl/Rent", -18000);
+  add("2026-07-04", "NEFT DR-SBIN0000003-CARD PAYMENT-BRANCH", -24000);
+  charge("2026-07-04", "NEFT CHGS 0704", 5); // channel unknown → verify
+  add("2026-07-07", "ATW-4111XXXXXX1111-S1ANAM12-PUNE", -2000);
+  charge("2026-07-08", "NON MAINTENANCE OF AMB CHGS JUN26", 600);
+  add("2026-07-12", "UPI/612300010000/BLINKIT/blinkit@ybl/Groceries", -620);
+  add("2026-07-30", "UPI/612300011111/LIC PREMIUM/lic@sbi/Policy", -1500);
+  add("2026-07-21", "UPI/612300011122/CROMA/croma@hdfcbank/Electronics", -8100);
+
+  // August 2026: salary late; balance near zero when the next penalty hits.
+  add("2026-08-03", "UPI/612300012222/BESCOM/bescom@ybl/Electricity", -1300);
+  charge("2026-08-06", "NON MAINTENANCE OF AMB CHGS JUL26", 600); // this one takes the balance below zero
+  add("2026-08-12", "NEFT CR-HDFC0000001-ACME SOFTWARE PVT LTD-SALARY AUG", 42000);
+  add("2026-08-13", "UPI/612300013333/NOBROKER RENT/rent@ybl/Rent", -18000);
+  add("2026-08-20", "NACH DR-BAJAJ FINANCE-EMI", -7850);
+  add("2026-08-28", "UPI/612300014444/SWIGGY/swiggy@icici/Payment", -410);
+
+  rows.sort((a, b) => a[0].split("/").reverse().join("").localeCompare(b[0].split("/").reverse().join("")));
+  // Recompute running balance after sorting so the Balance column is consistent.
+  let run = 18450.25;
+  for (const r of rows) { run = Math.round((run - (Number(r[4]) || 0) + (Number(r[5]) || 0)) * 100) / 100; r[6] = run.toFixed(2); }
+  const header = ["Date", "Narration", "Chq./Ref.No.", "Value Dt", "Withdrawal Amt.", "Deposit Amt.", "Closing Balance"];
+  const q = v => (/[",]/.test(v) ? `"${v}"` : v);
+  return ["SAMPLE BANK - STATEMENT OF ACCOUNT (synthetic demo data)", "Account: Regular Savings XXXXXXXX1234", "", header.join(","), ...rows.map(r => r.map(q).join(","))].join("\n");
 }

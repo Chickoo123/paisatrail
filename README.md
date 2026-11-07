@@ -1,80 +1,78 @@
-<div align="center">
-
 # PaisaTrail
 
-**Find the money leaks hiding in your bank statement, without uploading it anywhere.**
+**Find bank charges on your savings account that conflict with RBI rules, and get them reversed.**
 
 [![Test & deploy](https://github.com/Chickoo123/paisatrail/actions/workflows/ci.yml/badge.svg)](https://github.com/Chickoo123/paisatrail/actions/workflows/ci.yml)
 [![CodeQL](https://github.com/Chickoo123/paisatrail/actions/workflows/codeql.yml/badge.svg)](https://github.com/Chickoo123/paisatrail/actions/workflows/codeql.yml)
-![Dependencies](https://img.shields.io/badge/runtime%20dependencies-0-10b981)
-![License](https://img.shields.io/badge/license-MIT-blue)
+![Runtime dependencies: 0](https://img.shields.io/badge/runtime%20dependencies-0-0d5c4a)
 
-### [▶ Live demo](https://chickoo123.github.io/paisatrail/?demo) · [Use it with your statement](https://chickoo123.github.io/paisatrail/)
+**[Try it with the sample statement →](https://chickoo123.github.io/paisatrail/?demo)** · [Use your own statement](https://chickoo123.github.io/paisatrail/)
 
-<img src="docs/dashboard.png" alt="PaisaTrail dashboard showing KPIs, monthly cash flow and category breakdown" width="820">
-
-</div>
+<img src="docs/dashboard.png" alt="PaisaTrail showing ₹545 of reversible charges in a sample statement, with the evidence line and RBI rule for a minimum-balance penalty that pushed the balance below zero" width="860">
 
 ## The problem
 
-Indian bank statements are hard to read. A typical month has 70+ UPI lines like `UPI/612345678901/SWIGGY/swiggy@icici/Payment`, and the costly things hide in that noise: a ₹649 subscription you forgot, a telecom plan that quietly went from ₹599 to ₹699, a food order charged twice.
+Indian banks deduct a steady trickle of small charges from savings accounts: minimum-balance penalties, ATM fees, SMS charges, NEFT fees, debit-card fees, usually with 18% GST on top. Each one is small enough to ignore, and buried among dozens of UPI lines.
 
-Budgeting apps solve this by asking for your bank login or uploading your statement to their servers. **PaisaTrail does the whole analysis inside your browser tab.** A strict Content-Security-Policy (`connect-src 'none'`) makes it technically impossible for the page to send your data anywhere.
+RBI has rules about many of them, for example:
 
-## What it finds
+- A minimum-balance penalty must be **proportionate to the shortfall**, preceded by **notice**, and must **never push the balance below zero** (RBI, Nov 2014).
+- ATM charges apply only **beyond the free monthly limit**, and are **capped at ₹23** per transaction from 1 May 2025.
+- **Online NEFT** from a savings account has been **free** since 1 Jan 2020.
+- **Basic Savings Bank Deposit (BSBD) accounts** have no minimum balance and must get free withdrawals, a free debit card and a free cheque book.
 
-| Insight | How it works |
-|---|---|
-| **Recurring payments** (weekly / monthly / quarterly / yearly) | Groups debits by normalised merchant, then checks the median gap against each cadence's tolerance. At least 70% of gaps must be regular and 60% of amounts within ±20%. Projects the next charge date and annual cost. |
-| **Silent price hikes** | Flags when the last two charges match each other but differ by more than 2% from the earlier norm. Annual cost is recalculated at the new price. |
-| **Double charges** | Same merchant and amount within 2 days, excluding cash and P2P transfers. |
-| **Spending spikes** | Robust outlier test using median absolute deviation, compared with the merchant's own history (or the category's when history is short). Requires more than 3.5 MAD *and* at least 2.5× typical, so normal variation isn't flagged. |
-| **Cash flow & savings rate** | Monthly income vs spend vs invested. Transfers and investments are kept out of "spend", and refunds reduce the category they belong to. |
+To use these rules you have to find the charges, pair them with their GST lines, count ATM withdrawals per month, read the running balance, and know which circular applies. Almost nobody does all that. PaisaTrail does it in a few seconds.
 
-Plus a **"what if I cancel these?" calculator**, editable categories that PaisaTrail remembers per merchant (stored only on your device), search and filters, and a categorised CSV export.
+## What PaisaTrail does
 
-## Engineering highlights
+1. **Reads real statement exports.** It finds the header row under bank preambles, Indian date formats, ₹ lakh grouping, debit/credit or amount + Dr/Cr columns, and the running balance.
+2. **Finds charges** from their narrations (`NON MAINTENANCE OF AMB CHGS`, `ATM CHGS`, `SMS CHGS`, `NEFT CHGS INB`…) and **pairs each GST line** with the charge it was levied on.
+3. **Checks each charge against a specific RBI rule**, using only what the statement proves:
 
-- **Messy real-world parsing.** Auto-detects the header row under bank preambles. Handles Indian date formats (`05/11/26`, `5-Nov-2026`, `05 Sept 2026`), lakh grouping (`₹1,23,456.50`), `Dr`/`Cr` suffixes, bracket negatives, and both *Withdrawal/Deposit* and *Amount + Dr/Cr* layouts.
-- **UPI/NEFT/ACH/POS narration decoding** into readable merchants, with categorisation across 17 categories. Keywords match whole words only, so `credit` never matches `CRED` and `cola` never matches `Ola`. A unit test guards each of these.
-- **Zero dependencies, zero build step.** Native ES modules, hand-rolled SVG charts, about 35 KB of unminified JavaScript. Works offline once loaded.
-- **Security by construction.** Every piece of statement text is HTML-escaped before rendering, and the CSP blocks inline scripts and all network access.
-- **Tested.** 16 `node:test` suites cover the parsers, detectors and an end-to-end run on a deterministic synthetic statement with planted anomalies. CI runs them on Node 20 and 22, CodeQL scans every push, and GitHub Pages deploys only after tests pass.
-- **Accessible & responsive.** Keyboard-operable drop zone, labelled controls, `prefers-color-scheme` and `prefers-reduced-motion` support, and a phone layout with no horizontal scrolling.
+   | Finding | Status | Rule |
+   |---|---|---|
+   | Minimum-balance penalty that took the balance below zero (the negative part, plus its GST) | Ask to reverse | Min-balance circular, 2014 |
+   | Minimum-balance penalty on a BSBD or zero-balance account | Ask to reverse | BSBDA instructions |
+   | Any other minimum-balance penalty (notice and proportionality aren't visible in a statement) | Confirm | Min-balance circular |
+   | ATM charge in a month with 3 or fewer ATM withdrawals | Ask to reverse | ATM charges circular |
+   | ATM charge above ₹23 from 1 May 2025 | Ask to reverse (excess) | ATM charges circular |
+   | NEFT charge marked as online / channel unknown | Ask to reverse / Confirm | NEFT waiver, 2019 |
+   | Debit-card or cheque-book fee on a BSBD account | Ask to reverse | BSBDA instructions |
+   | The same periodic charge twice in a month | Ask to reverse | (arithmetic) |
+   | PMSBY / PMJJBY / APY auto-debit | Good to know | Confirm you enrolled |
 
-## Supported statements
+4. **Shows its evidence.** Each finding lists the exact statement lines, the charge and GST, and the amount claimed, with the rule linked. An "Every charge found" table lets you catch anything it missed.
+5. **Drafts the request** to your bank with every line itemised and the 30-day route to the RBI Ombudsman.
 
-Any CSV with a date column, a narration/description column, and either debit and credit columns or an amount column (optionally with a Dr/Cr column). This covers CSV exports from HDFC, ICICI, SBI, Axis and Kotak. If your bank only gives you PDF or XLS, open it in Excel or Sheets and save it as CSV.
+## Design decisions
 
-## Run locally
+- **It only claims what the statement proves.** "This penalty pushed your balance to −₹419.50" is provable, so it's *Ask to reverse*. "The bank didn't notify you first" isn't, so it's *Confirm*.
+- **The stronger claim wins.** An ATM charge in a month with only two withdrawals is disputed in full, not just the ₹2 above the cap.
+- **No double counting.** A charge disputed under one rule is never claimed again as a duplicate. A test covers this.
+- **Your statement never leaves the tab.** A strict CSP (`connect-src 'none'`) blocks every network request, and nothing is stored.
+- **What was cut.** Version 1 was a generic spend dashboard, which plenty of apps already provide. Version 2 keeps the hard part, the Indian statement parser, and points it at a problem nobody else solves.
+
+## Limits
+
+PaisaTrail can't see your bank's schedule of charges, can't tell your own bank's ATMs from others' unless the narration says so, and may miss charges with unusual narrations. It isn't legal advice. Each source in [`src/rules.js`](src/rules.js) has a last-checked date and links to the official RBI page. RBI updated the BSBDA framework in December 2025, so check the current text.
+
+## Engineering
+
+- `src/statement.js`: a statement reader (CSV, dates, amounts, column and balance detection).
+- `src/charges.js`: charge classification, GST pairing and rule checks, plus the dispute letter. It's pure, with no DOM access.
+- `src/rules.js`: the citation registry. A test checks that every rule links to an official RBI page.
+- 13 `node:test` suites, covering the parser, the classifier (including false-positive guards such as "COFFEE" and UPI payments), each rule with a counter-case, GST pairing, no double counting, and an end-to-end run on a synthetic statement.
+- Zero runtime dependencies, keyboard-accessible, works on phones. CI runs on Node 20 and 22, with CodeQL and Pages deploy.
 
 ```bash
-git clone https://github.com/Chickoo123/paisatrail && cd paisatrail
-npm test          # 16 test suites, no install needed (Node 20+)
-npm run serve     # or: python -m http.server
+npm test
+npm run serve
 ```
 
-Or open it in **GitHub Codespaces** (button on the repo page). The dev container is preconfigured.
+## Related
 
-## Architecture
-
-```
-index.html        UI shell + strict CSP
-styles.css        design tokens, dark/light themes, responsive grid
-src/core.js       pure analysis engine (parse → normalise → categorise → detect)
-src/app.js        rendering, SVG charts, interactions, local-only persistence
-src/sample.js     deterministic synthetic statement for the demo and tests
-tests/            node:test unit and end-to-end tests
-```
-
-`core.js` has no DOM access, so the same engine runs in the browser and under Node in CI.
-
-## Roadmap
-
-- [ ] PDF statement parsing with pdf.js (still client-side)
-- [ ] Multi-file merge across accounts and credit cards
-- [ ] Budget targets per category with month-to-date pacing
+[LoanLens](https://github.com/Chickoo123/loanlens) checks loan offers (the KFS, APR and RBI's fair-lending rules) the same way.
 
 ---
 
-Built by [Harshil Desai](https://github.com/Chickoo123). Insights are informational and not financial advice. The sample data is synthetic.
+Built by [Harshil Desai](https://github.com/Chickoo123). Not affiliated with RBI or any bank. Not legal or financial advice. The sample statement is synthetic.

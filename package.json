@@ -1,1 +1,12 @@
-{"name":"paisatrail","version":"1.0.0","private":true,"type":"module","description":"Privacy-first bank statement and UPI spend analyzer that runs entirely in the browser","scripts":{"test":"node --test","serve":"npx --yes serve@14.2.4 ."},"license":"MIT"}
+{
+  "name": "paisatrail",
+  "version": "2.0.0",
+  "private": true,
+  "type": "module",
+  "description": "Find bank charges on an Indian savings account statement that conflict with RBI rules, estimate the refund and draft the dispute",
+  "scripts": {
+    "test": "node --test",
+    "serve": "npx --yes serve@14.2.4 ."
+  },
+  "license": "MIT"
+}
