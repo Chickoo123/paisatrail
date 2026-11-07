@@ -93,6 +93,7 @@ export function detectColumns(rows) {
 
 // ---------- Merchant normalisation ----------
 const UPI_HANDLE = /@[a-z0-9.]+/i;
+const BOILERPLATE = new Set(["pvt", "private", "ltd", "limited", "india", "technologies", "payment", "payments", "online", "services"]);
 const DOMAIN_SUFFIXES = [".com", ".in", ".co"];
 /** "NETFLIX.COM" → "NETFLIX" (a suffix check, not a regex replacement). */
 function stripDomain(word) {
@@ -113,10 +114,10 @@ export function normalizeMerchant(narration) {
     s = s.replace(/^(POS|PCD|ECOM|VIN|ATW|NWD|ACH|NACH|BBPS|BIL|INT\.?PD)[\s/:-]*([DC]-\s*)?(\d{4,}X*\d*[\s/:-]*)?/i, "");
   }
   s = s.replace(UPI_HANDLE, "").replace(/\b\d{5,}\b/g, "").replace(/[*_#/]+/g, " ");
-  s = s.split(/\s+/).map(stripDomain).join(" ")
-    .replace(/\b(pvt|private|ltd|limited|india|technologies|payments?|online|services)\b\.?/gi, "")
-    // Allowlist: merchant names are display text only, never markup.
-    .replace(/[^\p{L}\p{N} &'+.-]/gu, " ")
+  // Allowlist first: merchant names are display text only, never markup.
+  s = s.replace(/[^\p{L}\p{N} &'+.-]/gu, " ");
+  // Drop company boilerplate as whole tokens (no regex replacement over the string).
+  s = s.split(/\s+/).map(stripDomain).filter(w => !BOILERPLATE.has(w.toLowerCase().replace(/\.$/, ""))).join(" ")
     .replace(/[-/.]+$/g, "").replace(/\s+/g, " ").trim();
   if (!s) return "Unknown";
   return s.toLowerCase().replace(/\b\w/g, c => c.toUpperCase()).slice(0, 40);
