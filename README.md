@@ -8,7 +8,9 @@
 
 **[Try it with the sample statement →](https://chickoo123.github.io/paisatrail/?demo)** · [Use your own statement](https://chickoo123.github.io/paisatrail/)
 
-<img src="docs/dashboard.png" alt="PaisaTrail showing ₹545 of reversible charges in a sample statement, with the evidence line and RBI rule for a minimum-balance penalty that pushed the balance below zero" width="860">
+<img src="docs/hero.png" alt="PaisaTrail landing page with a live sample audit: ₹545 of ₹2,080 in charges can be challenged" width="860">
+
+Part of **[Harshil Desai's evidence-first tools for Indian finance](https://github.com/Chickoo123)**: [LoanLens](https://github.com/Chickoo123/loanlens) · [PaisaTrail](https://github.com/Chickoo123/paisatrail) · [IPO Lab](https://github.com/Chickoo123/ipo-reality-lab) · [RecoverX](https://github.com/Chickoo123/RecoverX)
 
 ## The problem
 
@@ -43,6 +45,8 @@ To use these rules you have to find the charges, pair them with their GST lines,
 
 4. **Shows its evidence.** Each finding lists the exact statement lines, the charge and GST, and the amount claimed, with the rule linked. An "Every charge found" table lets you catch anything it missed.
 5. **Drafts the request** to your bank with every line itemised and the 30-day route to the RBI Ombudsman.
+
+<img src="docs/dashboard.png" alt="PaisaTrail audit report: reversible amount, findings with statement evidence lines and RBI rule cards" width="860">
 
 ## Design decisions
 
