@@ -1,0 +1,84 @@
+/* ==========================================================================
+   Evidence Editorial: the shared design language for Harshil Desai's tools
+   (LoanLens · PaisaTrail · IPO Lab · RecoverX). Copy this file verbatim into
+   each product; set --accent / --accent-ink / --accent-soft per product.
+   ========================================================================== */
+:root {
+  /* Type */
+  --font-serif: ui-serif, "Iowan Old Style", "Charter", "Georgia", serif;
+  --font-sans: ui-sans-serif, system-ui, -apple-system, "Segoe UI Variable Text", "Segoe UI", Roboto, sans-serif;
+  --font-mono: ui-monospace, "SF Mono", "Cascadia Code", "JetBrains Mono", Consolas, monospace;
+  --t-xs: 12px; --t-sm: 13.5px; --t-md: 15.5px; --t-lg: 18px; --t-xl: 24px; --t-2xl: 32px; --t-3xl: clamp(34px, 4.6vw, 54px);
+
+  /* Space (4px base) */
+  --s-1: 4px; --s-2: 8px; --s-3: 12px; --s-4: 16px; --s-5: 24px; --s-6: 32px; --s-7: 48px; --s-8: 72px;
+
+  /* Shape & depth */
+  --r-sm: 6px; --r-md: 10px; --r-lg: 14px; --r-pill: 999px;
+  --shadow-1: 0 1px 2px rgba(20, 24, 31, .05);
+  --shadow-2: 0 1px 2px rgba(20, 24, 31, .04), 0 8px 24px -8px rgba(20, 24, 31, .10);
+
+  /* Neutrals: warm paper, ink */
+  --paper: #f7f6f2; --surface: #ffffff; --surface-2: #f2f1ec; --surface-3: #e9e7e0;
+  --hair: #e4e2db; --hair-strong: #d2cfc6;
+  --ink: #15181e; --ink-2: #3a3f48; --muted: #6a707b; --faint: #9a9fa8;
+
+  /* Semantics (severity), shared by every product */
+  --issue: #b4321f; --issue-soft: #fbece8; --issue-line: #f1c9c0;
+  --check: #8a5a00; --check-soft: #fbf3e3; --check-line: #ecd7aa;
+  --info: #2c5aa0; --info-soft: #ecf2fb; --info-line: #c9d8ef;
+  --ok: #1f6b45; --ok-soft: #e8f4ed; --ok-line: #bfdccb;
+
+  /* Product accent (overridden per product) */
+  --accent: #1e3a6e; --accent-ink: #ffffff; --accent-soft: #e9eef7;
+
+  --focus: 0 0 0 3px color-mix(in srgb, var(--accent) 35%, transparent);
+  color-scheme: light;
+}
+:root[data-theme="dark"] {
+  --paper: #0f1115; --surface: #16191f; --surface-2: #1c2027; --surface-3: #252a33;
+  --hair: #262b33; --hair-strong: #343a44;
+  --ink: #eceef2; --ink-2: #c9cdd5; --muted: #99a0ab; --faint: #6f7682;
+  --issue: #ff8f7d; --issue-soft: #2a1714; --issue-line: #4a2620;
+  --check: #f0bb5a; --check-soft: #282012; --check-line: #4a3a18;
+  --info: #93b6f0; --info-soft: #142033; --info-line: #24385a;
+  --ok: #7ad3a2; --ok-soft: #12241a; --ok-line: #1f4230;
+  --shadow-1: none; --shadow-2: 0 8px 24px -10px rgba(0, 0, 0, .6);
+  color-scheme: dark;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --paper: #0f1115; --surface: #16191f; --surface-2: #1c2027; --surface-3: #252a33;
+    --hair: #262b33; --hair-strong: #343a44;
+    --ink: #eceef2; --ink-2: #c9cdd5; --muted: #99a0ab; --faint: #6f7682;
+    --issue: #ff8f7d; --issue-soft: #2a1714; --issue-line: #4a2620;
+    --check: #f0bb5a; --check-soft: #282012; --check-line: #4a3a18;
+    --info: #93b6f0; --info-soft: #142033; --info-line: #24385a;
+    --ok: #7ad3a2; --ok-soft: #12241a; --ok-line: #1f4230;
+    --shadow-1: none; --shadow-2: 0 8px 24px -10px rgba(0, 0, 0, .6);
+    color-scheme: dark;
+  }
+}
+
+/* Family bar: the thread that ties the four products together */
+.hd-family { background: var(--ink); color: color-mix(in srgb, var(--paper) 70%, transparent); font: 500 var(--t-xs)/1 var(--font-sans); }
+:root[data-theme="dark"] .hd-family { background: #08090c; }
+@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) .hd-family { background: #08090c; } }
+.hd-family .hd-row { max-width: 1200px; margin: 0 auto; padding: 0 var(--s-5); height: 34px; display: flex; align-items: center; gap: var(--s-4); overflow-x: auto; scrollbar-width: none; }
+.hd-family .hd-row::-webkit-scrollbar { display: none; }
+.hd-family .hd-sig { white-space: nowrap; letter-spacing: .02em; }
+.hd-family .hd-sig b { color: var(--paper); font-weight: 650; }
+.hd-family nav { display: flex; gap: var(--s-4); margin-left: auto; white-space: nowrap; }
+.hd-family a { color: inherit; text-decoration: none; padding: 4px 0; }
+.hd-family a:hover { color: var(--paper); }
+.hd-family a[aria-current="page"] { color: var(--paper); box-shadow: inset 0 -2px 0 var(--accent-on-dark, #8fb0ff); }
+@media (max-width: 640px) { .hd-family .hd-sig span { display: none; } }
+
+/* Shared atoms */
+.hd-eyebrow { display: inline-flex; align-items: center; gap: var(--s-2); font: 650 var(--t-xs)/1 var(--font-sans); letter-spacing: .08em; text-transform: uppercase; color: var(--accent); }
+.hd-chip { display: inline-flex; align-items: center; gap: 6px; height: 24px; padding: 0 10px; border-radius: var(--r-pill); font: 650 11.5px/1 var(--font-sans); letter-spacing: .02em; white-space: nowrap; border: 1px solid transparent; }
+.hd-chip.issue { color: var(--issue); background: var(--issue-soft); border-color: var(--issue-line); }
+.hd-chip.check { color: var(--check); background: var(--check-soft); border-color: var(--check-line); }
+.hd-chip.info { color: var(--info); background: var(--info-soft); border-color: var(--info-line); }
+.hd-chip.ok { color: var(--ok); background: var(--ok-soft); border-color: var(--ok-line); }
+.hd-chip .dot { width: 6px; height: 6px; border-radius: 50%; background: currentColor; }

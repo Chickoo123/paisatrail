@@ -4,87 +4,132 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>PaisaTrail — Find bank charges you can get reversed</title>
-  <meta name="description" content="Upload your savings account statement. PaisaTrail finds bank charges that conflict with RBI rules (minimum-balance penalties, ATM fees, NEFT charges, duplicates), estimates what you can claim back and drafts the dispute. Runs entirely in your browser.">
-  <meta name="theme-color" content="#0d5c4a">
+  <meta name="description" content="Upload a savings account statement. PaisaTrail finds bank charges that conflict with RBI rules, shows the evidence line by line, estimates what you can claim back and drafts the request. Runs entirely in your browser.">
+  <meta name="theme-color" content="#0c5b57">
   <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self'; img-src 'self' data:; connect-src 'none'; form-action 'none'; base-uri 'none'">
-  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='7' fill='%230d5c4a'/%3E%3Ctext x='16' y='22' font-size='17' text-anchor='middle' fill='white' font-family='sans-serif' font-weight='700'%3E%E2%82%B9%3C/text%3E%3C/svg%3E">
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='8' fill='%230c5b57'/%3E%3Cpath d='M10 9h12M10 14h12M10 9c7 0 7 9 0 9l9 6' stroke='white' stroke-width='2.4' fill='none' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E">
+  <link rel="stylesheet" href="family.css">
   <link rel="stylesheet" href="styles.css">
 </head>
 <body>
-  <a class="skip" href="#results">Skip to results</a>
+  <a class="skip" href="#audit">Skip to the audit</a>
+  <div class="hd-family"><div class="hd-row">
+    <span class="hd-sig"><b>Harshil Desai</b><span> · Evidence-first tools for Indian finance</span></span>
+    <nav aria-label="Other tools by Harshil Desai">
+      <a href="https://chickoo123.github.io/loanlens/">LoanLens</a>
+      <a href="https://chickoo123.github.io/paisatrail/" aria-current="page">PaisaTrail</a>
+      <a href="https://chickoo123.github.io/ipo-reality-lab/">IPO Lab</a>
+      <a href="https://github.com/Chickoo123/RecoverX">RecoverX</a>
+    </nav>
+  </div></div>
+
   <header class="site-head">
     <div class="wrap head-row">
-      <a class="brand" href="./"><span class="mark" aria-hidden="true">₹</span>PaisaTrail</a>
-      <nav class="head-links">
+      <a class="brand" href="./" aria-label="PaisaTrail home">
+        <span class="mark" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M7 6h10M7 10h10M7 6c5.5 0 5.5 8 0 8l7 5"/></svg></span>
+        PaisaTrail
+      </a>
+      <nav class="head-links" aria-label="Page">
+        <a href="#how">How it works</a>
         <a href="#method">Method</a>
         <a href="#sources">Sources</a>
-        <a href="https://github.com/Chickoo123/paisatrail">Source code</a>
-        <button id="theme" class="ghost-btn" aria-label="Toggle dark mode">◐</button>
+        <a href="https://github.com/Chickoo123/paisatrail">GitHub</a>
+        <button id="theme" class="icon-btn" type="button" aria-label="Toggle dark mode"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3a9 9 0 1 0 9 9 7 7 0 0 1-9-9z"/></svg></button>
       </nav>
     </div>
   </header>
 
-  <main class="wrap">
-    <section class="intro">
-      <h1>Find bank charges you can get reversed.</h1>
-      <p class="lede">Banks deduct minimum-balance penalties, ATM fees, SMS charges and transfer fees, often with GST on top. Some of them conflict with RBI's rules. Upload your savings account statement, and PaisaTrail lists those charges with the rule each one breaks, estimates what you can claim back, and drafts the request.</p>
-      <ul class="trust">
-        <li><b>Checks against RBI rules.</b> Each finding links to the circular it relies on.</li>
-        <li><b>Shows its evidence.</b> Every claim lists the exact statement lines behind it.</li>
-        <li><b>Your statement stays with you.</b> It's read in your browser, and nothing is uploaded or stored.</li>
-      </ul>
-    </section>
-
-    <div class="layout">
-      <section class="panel upload" aria-label="Upload statement">
-        <div id="drop" class="drop" tabindex="0" role="button" aria-label="Choose a statement CSV file">
-          <input id="file" type="file" accept=".csv,text/csv" hidden>
-          <b>Choose or drop your statement (CSV)</b>
-          <span>Most Indian banks let you download a CSV from net banking</span>
+  <main>
+    <section class="hero wrap">
+      <div class="hero-copy">
+        <p class="hd-eyebrow"><span class="pulse" aria-hidden="true"></span>Checked against RBI rules</p>
+        <h1>Find the bank charges you can get&nbsp;reversed.</h1>
+        <p class="lede">Minimum-balance penalties, ATM fees, transfer charges, each with GST on top. Some break RBI's rules. PaisaTrail reads your statement, proves which ones, line by line, and drafts the request to your bank.</p>
+        <div class="cta">
+          <a class="btn primary" href="#audit">Check my statement</a>
+          <a class="btn quiet" href="#audit" data-sample>See a sample audit <span aria-hidden="true">→</span></a>
         </div>
-        <div class="or">or</div>
-        <button id="sample" class="btn secondary" type="button">Use the sample statement</button>
-        <label>Account type
-          <select id="account">
-            <option value="regular">Regular savings account</option>
-            <option value="bsbda">Basic Savings Bank Deposit (BSBD) account</option>
-            <option value="zero_balance">Zero-balance account (e.g. salary account)</option>
-          </select>
-        </label>
-        <p class="privacy-note">The page's security policy blocks all network requests, so your statement can't leave this tab.</p>
-        <p id="errors" class="errors" role="alert" hidden></p>
-      </section>
-
-      <section id="results" class="results" aria-live="polite" aria-label="Audit results">
-        <article class="card"><h2>No statement yet</h2><p class="muted">Choose a CSV file or use the sample statement to see what PaisaTrail finds.</p></article>
-      </section>
-      <a id="jump" class="jump" href="#results" hidden></a>
-    </div>
-
-    <section id="method" class="doc">
-      <h2>How PaisaTrail works</h2>
-      <ol>
-        <li><b>Reads the statement</b>: finds the header row, Indian date formats, debit/credit or amount + Dr/Cr columns, and the running balance.</li>
-        <li><b>Finds charges</b> from their narrations (for example <code>NON MAINTENANCE OF AMB CHGS</code>, <code>ATM CHGS</code>, <code>SMS CHGS</code>, <code>NEFT CHGS</code>) and matches each GST line to the charge it was levied on.</li>
-        <li><b>Checks each charge against a specific RBI rule</b>, using only what the statement proves. For example, a penalty that takes the balance below zero is provable; whether the bank sent a notice first isn't, so that's marked "Confirm".</li>
-      </ol>
-      <h3>What PaisaTrail cannot tell you</h3>
-      <ul>
-        <li>Your bank's own schedule of charges, or whether you agreed to a particular fee. Ask for the schedule if a charge looks high.</li>
-        <li>Whether a transaction was online or at a branch, or at your own bank's ATM, unless the narration says so.</li>
-        <li>Charges with narrations it doesn't recognise. Check the "Every charge found" table against your statement.</li>
-        <li>Legal advice. Findings are requests to make to your bank, not determinations.</li>
-      </ul>
+        <dl class="proof">
+          <div><dt>9 checks</dt><dd>Each linked to the RBI circular behind it</dd></div>
+          <div><dt>Line-level</dt><dd>Every claim shows the statement entries that prove it</dd></div>
+          <div><dt>0 bytes</dt><dd>Leave your device. The statement never uploads</dd></div>
+        </dl>
+      </div>
+      <aside class="specimen" id="specimen" aria-label="Sample audit result"></aside>
     </section>
 
-    <section id="sources" class="doc">
-      <h2>Sources</h2>
-      <ul id="source-list" class="sources"></ul>
+    <section id="how" class="how wrap" aria-label="How it works">
+      <ol>
+        <li><span>01</span><h3>Download a CSV</h3><p>Export your savings account statement from net banking. Most Indian banks offer CSV.</p></li>
+        <li><span>02</span><h3>We find and test every charge</h3><p>Charges are matched to their GST lines, ATM use is counted per month, and the running balance is read.</p></li>
+        <li><span>03</span><h3>Claim it back</h3><p>An evidence trail for each charge, and a letter to your bank with the 30-day route to the RBI Ombudsman.</p></li>
+      </ol>
+    </section>
+
+    <section id="audit" class="workspace wrap" aria-label="Statement audit">
+      <header class="ws-head">
+        <div>
+          <p class="hd-eyebrow">Audit</p>
+          <h2>Check a statement</h2>
+        </div>
+      </header>
+
+      <div class="layout">
+        <section class="panel upload" aria-label="Upload statement">
+          <div id="drop" class="drop" tabindex="0" role="button" aria-label="Choose a statement CSV file">
+            <input id="file" type="file" accept=".csv,text/csv" hidden>
+            <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 16V4M7 9l5-5 5 5M4 16v3a1 1 0 0 0 1 1h14a1 1 0 0 0 1-1v-3"/></svg>
+            <b>Drop your statement CSV</b>
+            <span>or click to choose a file</span>
+          </div>
+          <div class="or">or</div>
+          <button id="sample" class="btn quiet full" type="button">Use the sample statement</button>
+          <label class="field">Account type
+            <select id="account">
+              <option value="regular">Regular savings account</option>
+              <option value="bsbda">Basic Savings Bank Deposit (BSBD)</option>
+              <option value="zero_balance">Zero-balance / salary account</option>
+            </select>
+          </label>
+          <p class="privacy"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3l8 3v6c0 4.5-3.4 8.3-8 9-4.6-.7-8-4.5-8-9V6z"/></svg><span>Read in this tab only. The page's security policy blocks every network request, so the file can't be sent anywhere.</span></p>
+          <p id="errors" class="errors" role="alert" hidden></p>
+        </section>
+
+        <section id="results" class="report" aria-live="polite" aria-label="Audit report"></section>
+      </div>
+      <a id="jump" class="jump" href="#results" hidden></a>
+    </section>
+
+    <section class="appendix wrap">
+      <article id="method" class="doc">
+        <p class="hd-eyebrow">Methodology</p>
+        <h2>How a charge becomes a claim</h2>
+        <ol class="method-steps">
+          <li><b>Read</b><span>Finds the header row under bank preambles, Indian date formats, debit/credit or amount + Dr/Cr columns, and the running balance.</span></li>
+          <li><b>Identify</b><span>Recognises charges from their narrations (<code>NON MAINTENANCE OF AMB CHGS</code>, <code>ATM CHGS</code>, <code>NEFT CHGS INB</code>…) and pairs each GST line with the charge it was levied on.</span></li>
+          <li><b>Test</b><span>Applies a specific RBI rule using only what the statement proves. A finding is <em>Proven</em> when the statement alone establishes it, for example a penalty that took the balance below zero. Anything that depends on outside facts, such as whether the bank sent a notice, is marked <em>Confirm</em>.</span></li>
+        </ol>
+        <h3>What PaisaTrail cannot tell you</h3>
+        <ul class="limits">
+          <li>Your bank's own schedule of charges, or whether you agreed to a fee.</li>
+          <li>Whether a transfer was online, or an ATM was your bank's, unless the narration says so.</li>
+          <li>Charges with narrations it doesn't recognise. Check the "Every charge found" table.</li>
+          <li>Legal advice. Findings are requests to make to your bank.</li>
+        </ul>
+      </article>
+      <article id="sources" class="doc">
+        <p class="hd-eyebrow">Sources</p>
+        <h2>Every rule, linked to RBI</h2>
+        <ul id="source-list" class="sources"></ul>
+      </article>
     </section>
   </main>
 
-  <footer class="site-foot wrap">
-    <p>Built by <a href="https://github.com/Chickoo123">Harshil Desai</a> · Open source (MIT) · Not affiliated with RBI or any bank · Not legal or financial advice. · Companion tool: <a href="https://chickoo123.github.io/loanlens/">LoanLens</a> checks loan offers.</p>
+  <footer class="site-foot">
+    <div class="wrap foot-row">
+      <span>Built by <a href="https://github.com/Chickoo123">Harshil Desai</a> · MIT licensed · Companion: <a href="https://chickoo123.github.io/loanlens/">LoanLens</a></span>
+      <span>Not affiliated with RBI or any bank · Not legal or financial advice</span>
+    </div>
   </footer>
   <script type="module" src="src/app.js"></script>
 </body>
