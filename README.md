@@ -11,7 +11,7 @@
 
 ### [▶ Live demo](https://chickoo123.github.io/paisatrail/?demo) · [Use it with your statement](https://chickoo123.github.io/paisatrail/)
 
-<img src="docs/dashboard.jpg" alt="PaisaTrail dashboard showing KPIs, monthly cash flow and category breakdown" width="820">
+<img src="docs/dashboard.png" alt="PaisaTrail dashboard showing KPIs, monthly cash flow and category breakdown" width="820">
 
 </div>
 
