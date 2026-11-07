@@ -1,0 +1,1 @@
+{"name":"paisatrail","version":"1.0.0","private":true,"type":"module","description":"Privacy-first bank statement and UPI spend analyzer that runs entirely in the browser","scripts":{"test":"node --test","serve":"npx --yes serve@14.2.4 ."},"license":"MIT"}

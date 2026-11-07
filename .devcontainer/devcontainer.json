@@ -1,0 +1,11 @@
+{
+  "name": "PaisaTrail",
+  "image": "mcr.microsoft.com/devcontainers/javascript-node:22",
+  "postCreateCommand": "npm test",
+  "forwardPorts": [3000],
+  "portsAttributes": { "3000": { "label": "PaisaTrail", "onAutoForward": "openPreview" } },
+  "postAttachCommand": "npx --yes serve@14.2.4 -l 3000 .",
+  "customizations": {
+    "vscode": { "extensions": ["dbaeumer.vscode-eslint", "esbenp.prettier-vscode"] }
+  }
+}
