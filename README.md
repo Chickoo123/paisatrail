@@ -37,7 +37,7 @@ Plus a **"what if I cancel these?" calculator**, editable categories that PaisaT
 
 - **Messy real-world parsing.** Auto-detects the header row under bank preambles. Handles Indian date formats (`05/11/26`, `5-Nov-2026`, `05 Sept 2026`), lakh grouping (`₹1,23,456.50`), `Dr`/`Cr` suffixes, bracket negatives, and both *Withdrawal/Deposit* and *Amount + Dr/Cr* layouts.
 - **UPI/NEFT/ACH/POS narration decoding** into readable merchants, with categorisation across 17 categories. Keywords match whole words only, so `credit` never matches `CRED` and `cola` never matches `Ola`. A unit test guards each of these.
-- **Zero dependencies, zero build step.** Native ES modules, hand-rolled SVG charts, about 25 KB of JavaScript. Works offline once loaded.
+- **Zero dependencies, zero build step.** Native ES modules, hand-rolled SVG charts, about 35 KB of unminified JavaScript. Works offline once loaded.
 - **Security by construction.** Every piece of statement text is HTML-escaped before rendering, and the CSP blocks inline scripts and all network access.
 - **Tested.** 16 `node:test` suites cover the parsers, detectors and an end-to-end run on a deterministic synthetic statement with planted anomalies. CI runs them on Node 20 and 22, CodeQL scans every push, and GitHub Pages deploys only after tests pass.
 - **Accessible & responsive.** Keyboard-operable drop zone, labelled controls, `prefers-color-scheme` and `prefers-reduced-motion` support, and a phone layout with no horizontal scrolling.
