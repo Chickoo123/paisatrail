@@ -142,3 +142,11 @@ test("toCSV escapes commas and quotes", () => {
   const out = toCSV([{ date: "2026-01-01", merchant: 'A "B"', category: "Other", amount: -1, description: "x,y" }]);
   assert.equal(out.split("\n")[1], '2026-01-01,"A ""B""",Other,-1,"x,y"');
 });
+
+test("merchant names are reduced to safe display characters", () => {
+  for (const raw of ['UPI/1/<img src=x onerror=alert(1)>/x@ybl/P', 'POS 4111XXXX1111 "EVIL"<script>.COM']) {
+    assert.ok(!/[<>"=()]/.test(normalizeMerchant(raw)), normalizeMerchant(raw));
+  }
+  assert.equal(normalizeMerchant("POS 4111XXXXXX1111 SHOP.IN"), "Shop");
+  assert.equal(normalizeMerchant("POS 4111XXXXXX1111 NETFLIX.COM"), "Netflix");
+});

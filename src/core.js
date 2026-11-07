@@ -93,6 +93,14 @@ export function detectColumns(rows) {
 
 // ---------- Merchant normalisation ----------
 const UPI_HANDLE = /@[a-z0-9.]+/i;
+const DOMAIN_SUFFIXES = [".com", ".in", ".co"];
+/** "NETFLIX.COM" → "NETFLIX" (a suffix check, not a regex replacement). */
+function stripDomain(word) {
+  const lower = word.toLowerCase();
+  const suffix = DOMAIN_SUFFIXES.find(t => lower.endsWith(t) && lower.length > t.length);
+  return suffix ? word.slice(0, -suffix.length) : word;
+}
+
 /** Extracts a readable merchant from UPI/NEFT/IMPS/POS narrations. */
 export function normalizeMerchant(narration) {
   let s = String(narration || "").trim();
@@ -104,8 +112,11 @@ export function normalizeMerchant(narration) {
   } else if (/^(POS|PCD|ECOM|VIN|ATW|NWD|ACH|NACH|BBPS|BIL|INT\.?PD)\b/i.test(s)) {
     s = s.replace(/^(POS|PCD|ECOM|VIN|ATW|NWD|ACH|NACH|BBPS|BIL|INT\.?PD)[\s/:-]*([DC]-\s*)?(\d{4,}X*\d*[\s/:-]*)?/i, "");
   }
-  s = s.replace(UPI_HANDLE, "").replace(/\b\d{5,}\b/g, "").replace(/[*_#/]+/g, " ").replace(/\.(com|in|co)\b/gi, "")
+  s = s.replace(UPI_HANDLE, "").replace(/\b\d{5,}\b/g, "").replace(/[*_#/]+/g, " ");
+  s = s.split(/\s+/).map(stripDomain).join(" ")
     .replace(/\b(pvt|private|ltd|limited|india|technologies|payments?|online|services)\b\.?/gi, "")
+    // Allowlist: merchant names are display text only, never markup.
+    .replace(/[^\p{L}\p{N} &'+.-]/gu, " ")
     .replace(/[-/.]+$/g, "").replace(/\s+/g, " ").trim();
   if (!s) return "Unknown";
   return s.toLowerCase().replace(/\b\w/g, c => c.toUpperCase()).slice(0, 40);
